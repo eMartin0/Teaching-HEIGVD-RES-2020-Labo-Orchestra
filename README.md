@@ -101,82 +101,82 @@ When you connect to the TCP interface of the **Auditor**, you should receive an 
 
 ## Task 1: design the application architecture and protocols
 
-| #  | Topic |
+| # | Topic |
 | --- | --- |
-|Question | How can we represent the system in an **architecture diagram**, which gives information both about the Docker containers, the communication protocols and the commands? |
-| | *Insert your diagram here...* |
-|Question | Who is going to **send UDP datagrams** and **when**? |
-| | *Enter your response here...* |
-|Question | Who is going to **listen for UDP datagrams** and what should happen when a datagram is received? |
-| | *Enter your response here...* |
-|Question | What **payload** should we put in the UDP datagrams? |
-| | *Enter your response here...* |
-|Question | What **data structures** do we need in the UDP sender and receiver? When will we update these data structures? When will we query these data structures? |
-| | *Enter your response here...* |
+| Question | How can we represent the system in an **architecture diagram**, which gives information both about the Docker containers, the communication protocols and the commands? |
+| | ![architecture_diagram](images/architecture_diagram_v2.jpeg "Architecture Diagram")The first dotted arrows represents the musician docker nodes sending UDP datagrams to the multicast group.  The first dotted arrows represents the auditor docker node joining the multicast group to receive UDP datagrams.  The regular arrow reprensents the host sending TCP connection request to the defined port : 2205 and receiving the active musicians. |
+| Question | Who is going to **send UDP datagrams** and **when**? |
+| | The musicians are going to send UDP datagrams every second on the defined multicast group (239.255.11.3:9094). |
+| Question | Who is going to **listen for UDP datagrams** and what should happen when a datagram is received? |
+| | The auditor is going to listen for UDP datagrams by joining the multicast group. The auditor shall store the content of the datagram in a dictionary of activeMusicians. |
+| Question | What **payload** should we put in the UDP datagrams? |
+| | The payload of the datagramm should be a serialized object. It should contain an object that must contain the following keys : - uuid, - sound/notes. |
+| Question | What **data structures** do we need in the UDP sender and receiver? When will we update these data structures? When will we query these data structures? |
+| | A dictionary can be used to store the defined data, dictionaries are very easy to use. The sender will always send the same dicitonary. The receiver will update the doctionary on intrevals. The host will ask to see the reciever's dictionary. |
 
 
 ## Task 2: implement a "musician" Node.js application
 
-| #  | Topic |
-| ---  | --- |
-|Question | In a JavaScript program, if we have an object, how can we **serialize it in JSON**? |
-| | *Enter your response here...*  |
-|Question | What is **npm**?  |
-| | *Enter your response here...*  |
-|Question | What is the `npm install` command and what is the purpose of the `--save` flag?  |
-| | *Enter your response here...*  |
-|Question | How can we use the `https://www.npmjs.com/` web site?  |
-| | *Enter your response here...*  |
-|Question | In JavaScript, how can we **generate a UUID** compliant with RFC4122? |
-| | *Enter your response here...*  |
-|Question | In Node.js, how can we execute a function on a **periodic** basis? |
-| | *Enter your response here...*  |
-|Question | In Node.js, how can we **emit UDP datagrams**? |
-| | *Enter your response here...*  |
-|Question | In Node.js, how can we **access the command line arguments**? |
-| | *Enter your response here...*  |
+| # | Topic |
+| --- | --- |
+| Question | In a JavaScript program, if we have an object, how can we **serialize it in JSON**? |
+| | The JSON.stringify(myObject) function allows us to serialize myObject in JSON string format. |
+| Question | What is **npm**? |
+| | npm is a packet manager for Node.js. It's use simplifies managing dependencies and module accessibility. |
+| Question | What is the `npm install` command and what is the purpose of the `--save` flag?  |
+| | `npm install` command can be used to install a module, the module is added by default to your package.json as a dependency. Adding the flag `--save-*` lets you control where and how the are going to be stored, the star can be dev : `--save-dev`.  |
+| Question | How can we use the `https://www.npmjs.com/` web site?  |
+| | The npm website is very easy to use plateform. There is lot of documentation. On the home page you can look for packages/modules. |
+| Question | In JavaScript, how can we **generate a UUID** compliant with RFC4122? |
+| | `npm` has an easy/ready to use module complient with the RFC4122 called uuid. |
+| Question | In Node.js, how can we execute a function on a **periodic** basis? |
+| | The `timer` exposes global functions such as setInterval(callback, delay) to run functions at defined intervals. |
+| Question | In Node.js, how can we **emit UDP datagrams**? |
+| | We can emit UDP datagrams by using the `dgram` module, create an UDP socket and use the command send. |
+| Question | In Node.js, how can we **access the command line arguments**? |
+| | `process` is a global object to manage the current node process. It provides a property to get the provided agrmuents in an array : `process.argv`. |
 
 
 ## Task 3: package the "musician" app in a Docker image
 
-| #  | Topic |
-| ---  | --- |
-|Question | How do we **define and build our own Docker image**?|
-| | *Enter your response here...*  |
-|Question | How can we use the `ENTRYPOINT` statement in our Dockerfile?  |
-| | *Enter your response here...*  |
-|Question | After building our Docker image, how do we use it to **run containers**?  |
-| | *Enter your response here...*  |
-|Question | How do we get the list of all **running containers**?  |
-| | *Enter your response here...*  |
-|Question | How do we **stop/kill** one running container?  |
-| | *Enter your response here...*  |
-|Question | How can we check that our running containers are effectively sending UDP datagrams?  |
-| | *Enter your response here...*  |
+| # | Topic |
+| --- | --- |
+| Question | How do we **define and build our own Docker image**?|
+| | We need to define a node image to build our node application in a Dockerfile. We can builg our image using : `docker build -t image_name my_dir`. |
+| Question | How can we use the `ENTRYPOINT` statement in our Dockerfile?  |
+| | The `ENRTYPOINT` statement is used instead of the CMD statment to launch the node application using argments passed from the docker run command. We used : `ENTRYPOINT ["node", "/opt/app/auditor.js"]`, _auditor.js_ can be replaced with the main page of the application. |
+| Question | After building our Docker image, how do we use it to **run containers**?  |
+| | We can use the following command : `docker run -d res/musician trumpet`. |
+| Question | How do we get the list of all **running containers**?  |
+| | We can list all the running containers by typing the following command : `docker ps`. |
+| Question | How do we **stop/kill** one running container?  |
+| | We can stop a running container using the following command : `docker stop container_name`. We can kill a running container using th following command : `docker kill container_name`. Both of those commands can use containerID instead of the name of the container. |
+| Question | How can we check that our running containers are effectively sending UDP datagrams?  |
+| | We can check the network using WireShark or netcat on the docker network interface. |
 
 
 ## Task 4: implement an "auditor" Node.js application
 
-| #  | Topic |
-| ---  | ---  |
-|Question | With Node.js, how can we listen for UDP datagrams in a multicast group? |
-| | *Enter your response here...*  |
-|Question | How can we use the `Map` built-in object introduced in ECMAScript 6 to implement a **dictionary**?  |
-| | *Enter your response here...* |
-|Question | How can we use the `Moment.js` npm module to help us with **date manipulations** and formatting?  |
-| | *Enter your response here...* |
-|Question | When and how do we **get rid of inactive players**?  |
-| | *Enter your response here...* |
-|Question | How do I implement a **simple TCP server** in Node.js?  |
-| | *Enter your response here...* |
+| # | Topic |
+| --- | ---  |
+| Question | With Node.js, how can we listen for UDP datagrams in a multicast group? |
+| | We can listen for UDP datagrams by joining the multicast group. The `addMembership` on the UDP socket. |
+| Question | How can we use the `Map` built-in object introduced in ECMAScript 6 to implement a **dictionary**?  |
+| | `Map` and dictionary are very similar, excpept that `Map` implements useful methods. Both uses the pair key-value. |
+| Question | How can we use the `Moment.js` npm module to help us with **date manipulations** and formatting?  |
+| | We can use the `diff` method that uses a time/date et returns the difference between now and the time/date passed in arguments. |
+| Question | When and how do we **get rid of inactive players**?  |
+| | We get rid of inactive musicians when they did not play a sound/note in the last 5 seconds. A function is run every 5 seconds to check the last time they played something. |
+| Question | How do I implement a **simple TCP server** in Node.js?  |
+| | We can implement a simple TCP server using the `createServer` method privided by the `net` module. |
 
 
 ## Task 5: package the "auditor" app in a Docker image
 
-| #  | Topic |
-| ---  | --- |
-|Question | How do we validate that the whole system works, once we have built our Docker image? |
-| | *Enter your response here...* |
+| # | Topic |
+| --- | --- |
+| Question | How do we validate that the whole system works, once we have built our Docker image? |
+| | We can validate the system by running the following command : ./validate.sh. ![validate_capture](images/validate_capture.png)|
 
 
 ## Constraints
@@ -190,3 +190,35 @@ Please be careful to adhere to the specifications in this document, and in parti
 Also, we have prepared two directories, where you should place your two `Dockerfile` with their dependent files.
 
 Have a look at the `validate.sh` script located in the top-level directory. This script automates part of the validation process for your implementation (it will gradually be expanded with additional operations and assertions). As soon as you start creating your Docker images (i.e. creating your Dockerfiles), you should try to run it.
+
+-----
+
+## Sources
+
+Dockerfile :  
+https://docs.docker.com/engine/reference/builder/#entrypoint
+
+Network :  
+https://nodejs.org/api/net.html
+
+UDP :  
+https://nodejs.org/api/dgram.html#dgram_udp_datagram_sockets
+
+Modules :  
+https://nodejs.org/docs/v0.4.12/api/all.html#modules
+
+JSON :  
+https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/JSON/stringify
+
+Dictionaries :  
+https://pietschsoft.com/post/2015/09/05/javascript-basics-how-to-create-a-dictionary-with-keyvalue-pairs
+
+UUID generator :  
+https://www.npmjs.com/package/uuid
+
+npm install :  
+https://docs.npmjs.com/cli/install
+
+Process :
+https://nodejs.org/api/process.html
+
