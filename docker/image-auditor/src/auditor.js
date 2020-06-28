@@ -11,7 +11,7 @@ const moment = require("moment");
 const orchestraProtocol = require('./orchestraProtocol');
 
 // Contains active musicians
-let activeMusicians = {};
+let activeMusicians = new Map();
 
 // Creates datagram socket to join the multicast group and receive UDP datagrams
 const socketUDP = dgram.createSocket('udp4');
@@ -20,16 +20,21 @@ socketUDP.bind(orchestraProtocol.multicastUdpPort, function(){
     socketUDP.addMembership(orchestraProtocol.multicastAddress);
 });
 socketUDP.on("message", function(msg){
-    newNoteDict = JSON.parse(msg);
+    let newNoteDict = JSON.parse(msg);
     // Creates if the uuid does not exists et replace if exists
-    storedInfos = activeMusicians[newNoteDict["uuid"]];
-    if (storedInfos === undefined) {
-        activeMusicians[newNoteDict["uuid"]] = {
-            "uuid" : newNoteDict["uuid"],
-            "instument": orchestraProtocol.findInstrumentBySound(newNoteDict["notes"]),
-            "activeSince" : new Date()
-        };
+    let activeMusician;
+    if (activeMusicians.has(newNoteDict.uuid)) {
+        activeMusician = activeMusicians.get(newNoteDict.uuid);
+        activeMusician.lastNote = new Date();
+    } else {
+        activeMusician = {
+            "uuid": newNoteDict.uuid,
+            "instrument": orchestraProtocol.findInstrumentBySound(newNoteDict.notes),
+            "activeSince": new Date(),
+            "lastNote" : new Date()
+        }
     }
+    activeMusicians.set(newNoteDict.uuid, activeMusician);
 });
 
 // Creates a tcp server
@@ -38,10 +43,16 @@ serverTCP.listen(orchestraProtocol.auditorTcpPort, function(){
     console.log("Accepting TCP requests on port 2205");
 });
 serverTCP.on("connection", function(socket){
+    // Also checks right before sending
+    refreshMusicians();
     var activeMusiciansArray = [];
-    for(var uuid in activeMusicians){
-        activeMusiciansArray.push(activeMusicians[uuid]);
-    }
+    activeMusicians.forEach(musician => {
+        activeMusiciansArray.push({
+            "uuid": musician.uuid,
+            "instrument": musician.instrument,
+            "activeSince": musician.activeSince
+        });
+    });
     socket.write(JSON.stringify(activeMusiciansArray));
     socket.end();
 });
@@ -54,10 +65,9 @@ setInterval(refreshMusicians, orchestraProtocol.musiciansRefresh);
 /* * * * * Functions * * * * */
 // This function deletes inactive musicians 
 function refreshMusicians(){
-    for (var uuid in activeMusicians) {
-        var storedInfos = activeMusicians[uuid];
-        if (moment().diff(storedInfos["activeSince"], "milliseconds") > orchestraProtocol.musiciansRefresh) {
-            delete activeMusicians[uuid];
+    activeMusicians.forEach(musician => {
+        if (moment().diff(musician.lastNote, "milliseconds") > orchestraProtocol.musiciansRefresh) {
+            activeMusicians.delete(musician.uuid);
         }
-    }
+    });
 }
