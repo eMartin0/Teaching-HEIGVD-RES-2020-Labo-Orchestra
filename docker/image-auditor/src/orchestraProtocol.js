@@ -2,9 +2,6 @@
  * Defines the orchestra protocol and necessities
  */
 
-// Max listeners for UDP
-exports.maxListeners = 100;
-
 // Multicast Group infos
 exports.multicastAddress = "239.255.11.3";
 exports.multicastUdpPort = 9094;
@@ -14,7 +11,7 @@ exports.auditorTcpPort = 2205;
 
 // Defines refreshing times
 exports.notesRefresh = 1000;
-exports.musiciansRefresh = 15000; // 5000;
+exports.musiciansRefresh = 5000;
 
 // Defines the instruments available
 exports.availableInstruments = {

@@ -15,18 +15,27 @@ let activeMusicians = {};
 
 // Creates datagram socket to join the multicast group and receive UDP datagrams
 const socketUDP = dgram.createSocket('udp4');
-socketUDP.setMaxListeners(orchestraProtocol.maxListeners);
 socketUDP.bind(orchestraProtocol.multicastUdpPort, function(){
     console.log("Joining the magical orchestra");
     socketUDP.addMembership(orchestraProtocol.multicastAddress);
 });
+socketUDP.on("message", function(msg){
+    newNoteDict = JSON.parse(msg);
+    // Creates if the uuid does not exists et replace if exists
+    storedInfos = activeMusicians[newNoteDict["uuid"]];
+    if (storedInfos === undefined) {
+        activeMusicians[newNoteDict["uuid"]] = {
+            "uuid" : newNoteDict["uuid"],
+            "instument": orchestraProtocol.findInstrumentBySound(newNoteDict["notes"]),
+            "activeSince" : new Date()
+        };
+    }
+});
 
 // Creates a tcp server
 var serverTCP = network.createServer();
-
-// Manages the server
 serverTCP.listen(orchestraProtocol.auditorTcpPort, function(){
-    console.log("Accepting HTTP requests on port 2205");
+    console.log("Accepting TCP requests on port 2205");
 });
 serverTCP.on("connection", function(socket){
     var activeMusiciansArray = [];
@@ -40,28 +49,14 @@ serverTCP.on("connection", function(socket){
 console.log("I'm an orchestra amator and I'm ready for new notes..");
 
 // Run these function every refresh time
-setInterval(listenForNotes, orchestraProtocol.notesRefresh);
 setInterval(refreshMusicians, orchestraProtocol.musiciansRefresh);
 
 /* * * * * Functions * * * * */
-// This function listen for UDP datagrams on the socket
-function listenForNotes(){
-    socketUDP.on("message", function(msg){
-        newNoteDict = JSON.parse(msg);
-        // Creates if the uuid does not exists et replace if exists
-        activeMusicians[newNoteDict["uuid"]] = {
-            "uuid" : newNoteDict["uuid"],
-            "instument": orchestraProtocol.findInstrumentBySound(newNoteDict["notes"]),
-            "activeSince" : new Date()
-        };
-    });
-}
-
 // This function deletes inactive musicians 
 function refreshMusicians(){
     for (var uuid in activeMusicians) {
-        var value = activeMusicians[uuid];
-        if (moment().diff(value.activeSince, "milliseconds") > orchestraProtocol.musiciansRefresh) {
+        var storedInfos = activeMusicians[uuid];
+        if (moment().diff(storedInfos["activeSince"], "milliseconds") > orchestraProtocol.musiciansRefresh) {
             delete activeMusicians[uuid];
         }
     }

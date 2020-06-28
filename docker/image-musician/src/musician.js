@@ -16,7 +16,6 @@ if (!myInstrument) {
 
 // Creates the datagram socket that will be used to send messages
 const socketUDP = dgram.createSocket('udp4');
-socketUDP.setMaxListeners(orchestraProtocol.maxListeners);
 
 // Assignes a fixed uuid
 const myUUID = uuid.v4();
@@ -59,5 +58,5 @@ function playSomeNotes(){
     let message = new Buffer.from(payload);
     socketUDP.send(message, orchestraProtocol.multicastUdpPort, orchestraProtocol.multicastAddress, function(){
         console.log(payload);
-    })
+    });
 }
