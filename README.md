@@ -112,7 +112,7 @@ When you connect to the TCP interface of the **Auditor**, you should receive an 
 | Question | What **payload** should we put in the UDP datagrams? |
 | | The payload of the datagramm should be a serialized object. It should contain an object that must contain the following keys : - uuid, - sound/notes. |
 | Question | What **data structures** do we need in the UDP sender and receiver? When will we update these data structures? When will we query these data structures? |
-| | A dictionary can be used to store the defined data, dictionaries are very easy to use. The sender will always send the same dicitonary. The receiver will update the doctionary on intrevals. The host will ask to see the reciever's dictionary. |
+| | A dictionary can be used to store the defined data, dictionaries are very easy to use. The sender will always send the same dicitonary. The receiver will update the doctionary on intrevals. The host will ask to see the reciever's dictionary. But you cannot really delete a key, it becomes undefined. So we are using `Map`. |
 
 
 ## Task 2: implement a "musician" Node.js application
@@ -162,7 +162,7 @@ When you connect to the TCP interface of the **Auditor**, you should receive an 
 | Question | With Node.js, how can we listen for UDP datagrams in a multicast group? |
 | | We can listen for UDP datagrams by joining the multicast group. The `addMembership` on the UDP socket. |
 | Question | How can we use the `Map` built-in object introduced in ECMAScript 6 to implement a **dictionary**?  |
-| | `Map` and dictionary are very similar, excpept that `Map` implements useful methods. Both uses the pair key-value. |
+| | `Map` and dictionary are very similar, excpept that `Map` implements useful methods and a real delete method ! Both uses the pair key-value. |
 | Question | How can we use the `Moment.js` npm module to help us with **date manipulations** and formatting?  |
 | | We can use the `diff` method that uses a time/date et returns the difference between now and the time/date passed in arguments. |
 | Question | When and how do we **get rid of inactive players**?  |
@@ -176,7 +176,7 @@ When you connect to the TCP interface of the **Auditor**, you should receive an 
 | # | Topic |
 | --- | --- |
 | Question | How do we validate that the whole system works, once we have built our Docker image? |
-| | We can validate the system by running the following command : ./validate.sh. ![validate_capture](images/validate_capture.png)|
+| | We can validate the system by running the following command : ./validate.sh. ![validation_capture](images/validation_capture.png) Running thie script help us find what should be implemented in the details. |
 
 
 ## Constraints
@@ -221,4 +221,7 @@ https://docs.npmjs.com/cli/install
 
 Process :  
 https://nodejs.org/api/process.html
+
+Map :
+https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Map
 
