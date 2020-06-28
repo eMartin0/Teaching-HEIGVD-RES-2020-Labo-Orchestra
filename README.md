@@ -104,7 +104,7 @@ When you connect to the TCP interface of the **Auditor**, you should receive an 
 | # | Topic |
 | --- | --- |
 | Question | How can we represent the system in an **architecture diagram**, which gives information both about the Docker containers, the communication protocols and the commands? |
-| | ![architecture_diagram](images/architecture_diagram_v2.jpeg "Architecture Diagram")The first dotted arrows represents the musician docker nodes sending UDP datagrams to the multicast group.  The first dotted arrows represents the auditor docker node joining the multicast group to receive UDP datagrams.  The regular arrow reprensents the host sending TCP connection request to the defined port : 2205 and receiving the active musicians. |
+| | ![architecture_diagram](images/architecture_diagram_v2.jpeg "Architecture Diagram")  The dotted arrows with the number 1 represent the musician docker nodes sending UDP datagrams to the multicast group.  The dotted arrow with the numbre 2 represents the auditor docker node joining the multicast group to receive UDP datagrams.  The regular arrow with the number 3 reprensents the host sending TCP connection request to the defined port : 2205 and receiving the active musicians. |
 | Question | Who is going to **send UDP datagrams** and **when**? |
 | | The musicians are going to send UDP datagrams every second on the defined multicast group (239.255.11.3:9094). |
 | Question | Who is going to **listen for UDP datagrams** and what should happen when a datagram is received? |
